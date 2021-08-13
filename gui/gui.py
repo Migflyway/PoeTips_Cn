@@ -1,10 +1,11 @@
-import os
+import io
 import time
 import tkinter
 import traceback
 import screeninfo
-
-
+from urllib.request import urlopen
+from PIL import Image, ImageTk
+from gui.tips import ToolTip
 
 USE_GUI = True
 TIMEOUT_GUI = 4
@@ -116,6 +117,21 @@ if USE_GUI:
             )
             label.config(font=(GUI_FONT, GUI_FONT_SIZE))
 
+        def create_icon_header(self, img_path,itemContent, column=0, row=0
+        ):
+            u = urlopen(img_path)
+            my_picture = io.BytesIO(u.read())
+            u.close()
+            pil_img = Image.open(my_picture)
+            self.tk_img = ImageTk.PhotoImage(pil_img)
+            label = tkinter.Label(
+                self.frame, image=self.tk_img,bg='#BEBEBE'
+            )
+            label.grid(
+                column=column, row=row, sticky="WENS", columnspan=4, padx=5, pady=5
+            )
+            ToolTip(label,itemContent)
+
         def create_label_header2(
             self, text, column=0, row=0, sticky="E", columnspan=1
         ):
@@ -134,9 +150,17 @@ if USE_GUI:
                 column=column, row=row, sticky=sticky, columnspan=columnspan
             )
             label.config(font=(GUI_FONT, GUI_FONT_SIZE))
-
+        
+        def create_button(self, text, command, row=0, sticky="WE"):
+            s = tkinter.Button(
+                self.frame, text=text, command=command, bg=GUI_BG1, fg=GUI_FONT_COLOR,
+            )
+            s.grid(row=row, sticky=sticky, columnspan=3)
+            s.config(font=(GUI_FONT, GUI_FONT_SIZE)
+            )
         def prepare_window(self):
             frame = tkinter.Tk()
+            # frame = tkinter.Toplevel()
             frame.wm_attributes("-topmost", 1)
             frame.overrideredirect(False)
             frame.option_add("*Font", "courier 12")
@@ -287,7 +311,6 @@ if USE_GUI:
         def close(self, event=None):
             if self.frame:
                 self.frame.unbind("<Escape>")
-                self.frame.unbind("<FocusOut>")
                 self.frame.update()
                 self.frame.withdraw()
                 self.frame.quit()
@@ -296,25 +319,13 @@ if USE_GUI:
                 self.created = False
 
         def run(self):
-            self.frame.mainloop()
+            pass
+            # self.frame.mainloop()
 
         def create_at_cursor(self):
             super().create_at_cursor()
             self.run()
 
-        def lost_focus(self, event=None):
-            if not self.frame.focus_get():
-                self.close()
-        
-        def check_timeout(self):
-            self.frame.after(100, self.check_timeout)
-            check_timeout_gui()
-
-
-        def add_callbacks(self):
-            self.frame.bind("<Escape>", self.close)
-            self.frame.bind("<FocusOut>", self.lost_focus)
-            self.frame.after(100, self.check_timeout)
 else:
 
     class DisplayWindow:
